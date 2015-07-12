@@ -1,0 +1,20 @@
+{
+  "name": "meghdut-formbuilder",
+  "main": [
+    "formbuilder.js",
+    "formbuilder.css"
+  ],
+  "version": "0.0.1",
+  "authors": [
+    "hasan <hasan3050@gmail.com>"
+  ],
+  "description": "Formbuilder is a graphical interface for letting users build their own webforms. Think Wufoo or Google Forms, but a lightweight component that can be integrated into your application.",
+  "moduleType": [
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "formbuilder"
+  ],
+  "license": "MIT"
+}
