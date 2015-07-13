@@ -275,7 +275,8 @@
       BuilderView.prototype.initialize = function(options) {
           var selector;
           selector = options.selector, 
-          this.formBuilder = options.formBuilder, 
+          this.formBuilder = options.formBuilder,
+          this.type=(options.type? options.type: "Unknown Form"),
           this.bootstrapData = options.bootstrapData;
           if (selector != null) {
             this.setElement($(selector));
@@ -297,9 +298,9 @@
       this.saveFormButton = this.$el.find(".js-save-form");
       this.saveFormButton.attr('disabled', true).text(Formbuilder.options.dict.ALL_CHANGES_SAVED);
       if (!!Formbuilder.options.AUTOSAVE) {
-        /*setInterval(function() {
+        setInterval(function() {
           return _this.saveForm.call(_this);
-      }, 5000);*/
+      }, 5000);
     }
     return $(window).bind('beforeunload', function() {
         if (_this.formSaved) {
@@ -532,10 +533,11 @@
         jsonSchema={
             "$schema":"http://json-schema.org/draft-04/schema#",
             type:'object',
+            formType:this.type,
             properties:{
                 data:{
                     type:'object',
-                    view:"Something need to be addeed later",
+                    view:this.type,
                     properties:{},
                     order:[],
                     required:[]
@@ -552,7 +554,7 @@
         };
         var _this=this;
         _.each(payload,function(field,index){
-            var fieldKey = (field.cid ? field.cid : Formbuilder.idGenerator(Formbuilder.options.mappings.FIELD_KEY));
+            var fieldKey = (field.cid ? field.cid : Formbuilder.idGenerator(Formbuilder.options.mappings.FIELD_KEY,_this.collection));
             var item={};
 
             for(var element in Formbuilder.fields){
@@ -578,7 +580,7 @@
             field[Formbuilder.options.mappings.REQUIRED] ? jsonSchema.properties.data.required.push(fieldKey):'';
             jsonSchema.properties.data.properties[fieldKey]=item;
         })
-        return this.formBuilder.trigger('save', JSON.stringify(jsonSchema));
+        return jsonSchema;
     };
 
     BuilderView.prototype.doAjaxSave = function(payload) {
@@ -630,7 +632,7 @@
         BUTTON_CLASS: 'fb-button',
         HTTP_ENDPOINT: '',
         HTTP_METHOD: 'POST',
-        AUTOSAVE: true,
+        AUTOSAVE: false,
         CLEAR_FIELD_CONFIRM: false,
         mappings: {
             LABEL:        'title',
@@ -682,7 +684,7 @@
     Formbuilder.idGenerator=function(elementType,collection){
         var count=parseInt(Formbuilder.fields[elementType].count)+1;
         
-        if(elementType==Formbuilder.options.mappings.FIELD_KEY){
+        if(elementType==Formbuilder.options.mappings.FIELD_KEY && collection){
             var max=0;
             _.each(collection.models,function(element,index){
                 var cid= element.cid.split(/.*[^0-9]/);
@@ -734,7 +736,8 @@
                             title: schemaElement.title,
                             view: schemaElement.view,
                             required: _.contains(required,order[i]),
-                            fieldOptions:(schemaElement.fieldOptions || {})
+                            fieldOptions:(schemaElement.fieldOptions || {}),
+                            cid:order[i]
                         }
 
                         bootstrapData.push(formElement);
@@ -910,7 +913,7 @@
       Formbuilder.registerField(Formbuilder.fields.TEXT.key, {
         order: 0,
         view: "<input type='text' class='rf-size-<%= rf.get(Formbuilder.options.mappings.SIZE) %>' />",
-        edit: "<%= Formbuilder.templates['edit/size']() %>\n<%= Formbuilder.templates['edit/min_max_length']() %> \n<%= Formbuilder.templates['edit/units']() %>",
+        edit: "<%= Formbuilder.templates['edit/size']() %>\n<%= Formbuilder.templates['edit/min_max_length']() %>",
         addButton: "<span class='symbol'><span class='fa fa-font'></span></span> Text",
         defaultAttributes: function(attrs) {
           attrs.field_options.size = 'small';
@@ -1156,9 +1159,9 @@
       var __t, __p = '', __e = _.escape;
       with (obj) {
         __p +=
-        ((__t = ( Formbuilder.templates['partials/save_button']() )) == null ? '' : __t) +
+        /*((__t = ( Formbuilder.templates['partials/save_button']() )) == null ? '' : __t) +
         '\n' +
-        ((__t = ( Formbuilder.templates['partials/left_side']() )) == null ? '' : __t) +
+        */((__t = ( Formbuilder.templates['partials/left_side']() )) == null ? '' : __t) +
         '\n' +
         ((__t = ( Formbuilder.templates['partials/right_side']() )) == null ? '' : __t) +
         '\n<div class=\'fb-clear\'></div>';
