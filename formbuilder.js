@@ -666,13 +666,17 @@
 
     Formbuilder.fields = {
       TEXT:{count:0,key:'text',submit:{view:'text',type:'string'}},
+      TIME:{count:0,key:'time',submit:{view:'time',type:'string'}},
+      NUMBER:{count:0,key:'number',submit:{view:'number',type:'number'}},
       DROPDOWN:{count:0,key:'dropdown',submit:{view:'dropdown',type:'string'}},
       CHECKBOX:{count:0,key:'checkboxes',submit:{view:'checkboxes',type:'array'}},
       RADIO:{count:0,key:'radio',submit:{view:'radio',type:'string'}},
       DATE:{count:0,key:'date',submit:{view:'date',type:'string', format:'date-time'}},
       REFERENCE:{count:0,key:'reference',submit:{view:'reference',type:'ref'}},
+      ADDRESS:{count:0,key:'address',submit:{view:'address',type:'object'}},
+      EMAIL:{count:0,key:'email',submit:{view:'email',type:'string',format:'email'}},
       PARAGRAPH:{count:0,key:'paragraph',submit:{view:'paragraph',type:'string'}},
-      URL:{count:0,key:'url',submit:{view:'url',type:'url'}},
+      URL:{count:0,key:'url',submit:{view:'url',type:'string',format:'url'}},
       FIELD_KEY:{count:0,key:'field'},
       OPTION_KEY:{count:0,key:'key'}
     };
@@ -768,9 +772,9 @@
     }).call(this);
 
     (function() {
-      Formbuilder.registerField('address', {
+      Formbuilder.registerField(Formbuilder.fields.ADDRESS.key, {
         order: 50,
-        view: "<div class='input-line'>\n  <span class='street'>\n    <input type='text' />\n    <label>Address</label>\n  </span>\n</div>\n\n<div class='input-line'>\n  <span class='city'>\n    <input type='text' />\n    <label>City</label>\n  </span>\n\n  <span class='state'>\n    <input type='text' />\n    <label>State / Province / Region</label>\n  </span>\n</div>\n\n<div class='input-line'>\n  <span class='zip'>\n    <input type='text' />\n    <label>Zipcode</label>\n  </span>\n\n  <span class='country'>\n    <select><option>United States</option></select>\n    <label>Country</label>\n  </span>\n</div>",
+        view: "<div class='input-line'>\n  <span class='street'>\n    <input type='text' />\n    <label>Address</label>\n  </span>\n</div>\n\n<div class='input-line'>\n  <span class='city'>\n    <input type='text' />\n    <label>City</label>\n  </span>\n\n  <span class='state'>\n    <input type='text' />\n    <label>State / Province / Region</label>\n  </span>\n</div>\n\n<div class='input-line'>\n  <span class='zip'>\n    <input type='text' />\n    <label>Zipcode</label>\n  </span>\n\n  <span class='country'>\n    <select><option>Bangladesh</option></select>\n    <label>Country</label>\n  </span>\n</div>",
         edit: "<%= Formbuilder.templates['edit/options']({ includeOther: true }) %>",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-home\"></span></span> Address"
     });
@@ -833,7 +837,30 @@
     }).call(this);
 
     (function() {
-      Formbuilder.registerField('email', {
+      Formbuilder.registerField(Formbuilder.fields.REFERENCE.key, {
+        order: 24,
+        view: "<select>\n  <% if (rf.get(Formbuilder.options.mappings.INCLUDE_BLANK)) { %>\n    <option value=''></option>\n  <% } %>\n\n  <% for (i in (rf.get(Formbuilder.options.mappings.OPTIONS) || [])) { %>\n    <option <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].checked && 'selected' %>>\n      <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].label %>\n    </option>\n  <% } %>\n</select>",
+        edit: "<%= Formbuilder.templates['edit/options']({ includeBlank: false }) %>",
+        addButton: "<span class=\"symbol\"><span class=\"fa fa-caret-down\"></span></span> Reference",
+        defaultAttributes: function(attrs) {
+          attrs.field_options.options = [
+          {
+              label: "",
+              checked: false
+          }, {
+              label: "",
+              checked: false
+          }
+          ];
+          attrs.field_options.include_blank_option = false;
+          return attrs;
+      }
+    });
+
+    }).call(this);
+
+    (function() {
+      Formbuilder.registerField(Formbuilder.fields.EMAIL.key, {
         order: 40,
         view: "<input type='text' class='rf-size-<%= rf.get(Formbuilder.options.mappings.SIZE) %>' />",
         edit: "",
@@ -843,7 +870,7 @@
     }).call(this);
 
     (function() {
-      Formbuilder.registerField('number', {
+      Formbuilder.registerField(Formbuilder.fields.NUMBER.key, {
         order: 30,
         view: "<input type='text' />\n<% if (units = rf.get(Formbuilder.options.mappings.UNITS)) { %>\n  <%= units %>\n<% } %>",
         edit: "<%= Formbuilder.templates['edit/min_max']() %>\n<%= Formbuilder.templates['edit/integer_only']() %>",
@@ -866,7 +893,7 @@
 
     }).call(this);
 
-    (function() {
+    /*(function() {
       Formbuilder.registerField('price', {
         order: 45,
         view: "<div class='input-line'>\n  <span class='above-line'>$</span>\n  <span class='dolars'>\n    <input type='text' />\n    <label>Dollars</label>\n  </span>\n  <span class='above-line'>.</span>\n  <span class='cents'>\n    <input type='text' />\n    <label>Cents</label>\n  </span>\n</div>",
@@ -874,7 +901,7 @@
         addButton: "<span class=\"symbol\"><span class=\"fa fa-usd\"></span></span> Price"
     });
 
-    }).call(this);
+    }).call(this);*/
 
     (function() {
       Formbuilder.registerField(Formbuilder.fields.RADIO.key, {
@@ -924,7 +951,7 @@
     }).call(this);
 
     (function() {
-      Formbuilder.registerField('time', {
+      Formbuilder.registerField(Formbuilder.fields.TIME.key, {
         order: 25,
         view: "<div class='input-line'>"+
         "<span class='hours'>"+
