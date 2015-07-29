@@ -183,6 +183,7 @@
             'click .js-add-option': 'addOption',
             'click .js-remove-option': 'removeOption',
             'click .js-default-updated': 'defaultUpdated',
+            'change .js-select-reference': 'selectReference',
             'input .option-label-input': 'forceRender'
         };
 
@@ -221,6 +222,20 @@
             } else {
                 options.push(newOption);
             }
+            this.model.set(Formbuilder.options.mappings.OPTIONS, options);
+            this.model.trigger("change:" + Formbuilder.options.mappings.OPTIONS);
+            return this.forceRender();
+        };
+
+        EditFieldView.prototype.selectReference = function(e) {
+            var $el, i, newOption, options;
+            var $this = $(e.target);
+            options = {};
+
+            options[Formbuilder.options.mappings.LABEL]=$this.val();
+            options[Formbuilder.options.mappings.REFERENCE]=$($this.html()).attr(Formbuilder.options.mappings.REFERENCE);
+            
+            console.log(options);
             this.model.set(Formbuilder.options.mappings.OPTIONS, options);
             this.model.trigger("change:" + Formbuilder.options.mappings.OPTIONS);
             return this.forceRender();
@@ -276,7 +291,8 @@
           var selector;
           selector = options.selector, 
           this.formBuilder = options.formBuilder,
-          this.type=(options.type? options.type: "Unknown Form"),
+          this.type=(options.type? options.type: "Unknown"),
+          this.reference=(options.reference? options.reference: {}),
           this.bootstrapData = options.bootstrapData;
           if (selector != null) {
             this.setElement($(selector));
@@ -637,6 +653,7 @@
         mappings: {
             LABEL:        'title',
             FIELD_TYPE:   'view',
+            REFERENCE:    '$ref',
             REQUIRED:     'required',
             ADMIN_ONLY:   'admin_only',
             FIELD_OPTION: 'fieldOptions',
@@ -672,7 +689,7 @@
       CHECKBOX:{count:0,key:'checkboxes',submit:{view:'checkboxes',type:'array'}},
       RADIO:{count:0,key:'radio',submit:{view:'radio',type:'string'}},
       DATE:{count:0,key:'date',submit:{view:'date',type:'string', format:'date-time'}},
-      REFERENCE:{count:0,key:'reference',submit:{view:'reference',type:'ref'}},
+      REFERENCE:{count:0,key:'reference',submit:{view:'reference',type:'object'}},
       ADDRESS:{count:0,key:'address',submit:{view:'address',type:'object'}},
       EMAIL:{count:0,key:'email',submit:{view:'email',type:'string',format:'email'}},
       PARAGRAPH:{count:0,key:'paragraph',submit:{view:'paragraph',type:'string'}},
@@ -754,6 +771,10 @@
         args = _.extend(opts, {
             formBuilder: this
         });
+        
+        Formbuilder.reference=((opts && opts.reference)?opts.reference:{});
+        Formbuilder.referenceType=((opts && opts.type)?opts.type:{});
+        
         this.mainView = new BuilderView(args);
     }
 
@@ -839,8 +860,8 @@
     (function() {
       Formbuilder.registerField(Formbuilder.fields.REFERENCE.key, {
         order: 24,
-        view: "<select>\n  <% if (rf.get(Formbuilder.options.mappings.INCLUDE_BLANK)) { %>\n    <option value=''></option>\n  <% } %>\n\n  <% for (i in (rf.get(Formbuilder.options.mappings.OPTIONS) || [])) { %>\n    <option <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].checked && 'selected' %>>\n      <%= rf.get(Formbuilder.options.mappings.OPTIONS)[i].label %>\n    </option>\n  <% } %>\n</select>",
-        edit: "<%= Formbuilder.templates['edit/options']({ includeBlank: false }) %>",
+        view: "<select>\n  <% if (rf.get(Formbuilder.options.mappings.INCLUDE_BLANK)) { %>\n    <option value=''></option>\n  <% } %>\n\n  <% for (i in (rf.get(Formbuilder.options.mappings.OPTIONS) || {})) { %>\n    <option <%= rf.get(Formbuilder.options.mappings.OPTIONS)[Formbuilder.options.mappings.REFERENCE] %>>\n      <%= rf.get(Formbuilder.options.mappings.OPTIONS)[Formbuilder.options.mappings.LABEL] %>\n    </option>\n  <% } %>\n</select>",
+        edit: "<%= Formbuilder.templates['edit/reference']({ includeBlank: false }) %>",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-caret-down\"></span></span> Reference",
         defaultAttributes: function(attrs) {
           attrs.field_options.options = [
@@ -1144,6 +1165,20 @@
 
     }
     return __p
+    };
+
+    this["Formbuilder"]["templates"]["edit/reference"] = function(obj) {
+      obj || (obj = {});
+      var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+      function print() { __p += __j.call(arguments, '') }
+      with (obj) {
+        __p += '<div class=\'fb-edit-section-header\'>Reference</div>\n\n';
+        __p += '\n\n<div class="reference">\n'+
+        '\t<select class="js-select-reference">\n\t\t<option $ref="/api/v1/schema/1">Hello</option>\n\t\t<option $ref="/api/v1/schema/2">Jello</option>\n\t</select>'+
+        '\n</div>\n';
+      }
+      console.log(__p);
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/size"] = function(obj) {
