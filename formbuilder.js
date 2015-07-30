@@ -232,12 +232,16 @@
             var $this = $(e.target);
             options = {};
 
-            options[Formbuilder.options.mappings.LABEL]=$this.val();
+            options[Formbuilder.options.mappings.REFERENCE_SHOW]=$this.val();
             options[Formbuilder.options.mappings.REFERENCE]=$($this.html()).attr(Formbuilder.options.mappings.REFERENCE);
+            options[Formbuilder.options.mappings.REFERENCE_TYPE]=$($this.html()).attr(Formbuilder.options.mappings.REFERENCE_TYPE);
             
-            console.log(options);
-            this.model.set(Formbuilder.options.mappings.OPTIONS, options);
-            this.model.trigger("change:" + Formbuilder.options.mappings.OPTIONS);
+            for(var key in options){
+              this.model.set(key,options[key]);
+              this.model.trigger("change:" + key);
+            }
+//            this.model.set(Formbuilder.options.mappings.OPTIONS, options);
+//            this.model.trigger("change:" + Formbuilder.options.mappings.OPTIONS);
             return this.forceRender();
         };
 
@@ -469,32 +473,32 @@
       var $newEditEl, $responseFieldEl;
       $responseFieldEl = this.$el.find(".fb-field-wrapper").filter(function() {
         return $(this).data('cid') === model.cid;
-    });
+      });
       $responseFieldEl.addClass('editing').siblings('.fb-field-wrapper').removeClass('editing');
       if (this.editView) {
         if (this.editView.model.cid === model.cid) {
           this.$el.find(".fb-tabs a[data-target=\"#editField\"]").click();
           this.scrollLeftWrapper($responseFieldEl);
           return;
+        }
+        this.editView.remove();
       }
-      this.editView.remove();
-    }
-    this.editView = new EditFieldView({
-        model: model,
-        parentView: this
-    });
-    $newEditEl = this.editView.render().$el;
-    this.$el.find(".fb-edit-field-wrapper").html($newEditEl);
-    this.$el.find(".fb-tabs a[data-target=\"#editField\"]").click();
-    this.scrollLeftWrapper($responseFieldEl);
-    return this;
+      this.editView = new EditFieldView({
+          model: model,
+          parentView: this
+      });
+      $newEditEl = this.editView.render().$el;
+      this.$el.find(".fb-edit-field-wrapper").html($newEditEl);
+      this.$el.find(".fb-tabs a[data-target=\"#editField\"]").click();
+      this.scrollLeftWrapper($responseFieldEl);
+      return this;
     };
 
     BuilderView.prototype.ensureEditViewScrolled = function() {
       if (!this.editView) {
         return;
-    }
-    return this.scrollLeftWrapper($(".fb-field-wrapper.editing"));
+      }
+      return this.scrollLeftWrapper($(".fb-field-wrapper.editing"));
     };
 
     BuilderView.prototype.scrollLeftWrapper = function($responseFieldEl) {
@@ -502,10 +506,10 @@
       this.unlockLeftWrapper();
       if (!$responseFieldEl[0]) {
         return;
-    }
-    return $.scrollWindowTo((this.$el.offset().top + $responseFieldEl.offset().top) - this.$responseFields.offset().top, 200, function() {
-        return _this.lockLeftWrapper();
-    });
+      }
+      return $.scrollWindowTo((this.$el.offset().top + $responseFieldEl.offset().top) - this.$responseFields.offset().top, 200, function() {
+          return _this.lockLeftWrapper();
+      });
     };
 
     BuilderView.prototype.lockLeftWrapper = function() {
@@ -519,9 +523,9 @@
     BuilderView.prototype.handleFormUpdate = function() {
       if (this.updatingBatch) {
         return;
-    }
-    this.formSaved = false;
-    return this.saveFormButton.removeAttr('disabled').text(Formbuilder.options.dict.SAVE_FORM);
+      }
+      this.formSaved = false;
+      return this.saveFormButton.removeAttr('disabled').text(Formbuilder.options.dict.SAVE_FORM);
     };
 
     BuilderView.prototype.saveForm = function(e) {
@@ -582,6 +586,14 @@
 
             item[Formbuilder.options.mappings.LABEL]=field[Formbuilder.options.mappings.LABEL];
             item[Formbuilder.options.mappings.FIELD_OPTION]=field[Formbuilder.options.mappings.FIELD_OPTION];
+            
+            if(item[Formbuilder.options.mappings.FIELD_TYPE]==Formbuilder.fields.REFERENCE.key){
+              item[Formbuilder.options.mappings.REFERENCE]=field[Formbuilder.options.mappings.REFERENCE];              
+              item[Formbuilder.options.mappings.REFERENCE_SHOW]=field[Formbuilder.options.mappings.REFERENCE_SHOW];
+              item[Formbuilder.options.mappings.REFERENCE_TYPE]=field[Formbuilder.options.mappings.REFERENCE_TYPE];
+            }
+
+
             var OPTION_KEY=Formbuilder.options.mappings.FIELD_OPTION.split('.');
             OPTION_KEY=OPTION_KEY[OPTION_KEY.length-1];
             if(item[Formbuilder.options.mappings.FIELD_OPTION] && item[Formbuilder.options.mappings.FIELD_OPTION][OPTION_KEY]){
@@ -654,6 +666,8 @@
             LABEL:        'title',
             FIELD_TYPE:   'view',
             REFERENCE:    '$ref',
+            REFERENCE_SHOW:'show',
+            REFERENCE_TYPE:'referenceType',
             REQUIRED:     'required',
             ADMIN_ONLY:   'admin_only',
             FIELD_OPTION: 'fieldOptions',
@@ -726,14 +740,14 @@
       for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
         x = _ref5[_i];
         opts[x] = _.template(opts[x]);
-    }
-    opts.field_type = name;
-    Formbuilder.fields[name] = opts;
-    if (opts.type === 'non_input') {
+      }
+      opts.field_type = name;
+      Formbuilder.fields[name] = opts;
+      if (opts.type === 'non_input') {
         return Formbuilder.nonInputFields[name] = opts;
-    } else {
+      } else {
         return Formbuilder.inputFields[name] = opts;
-    }
+      }
     };
 
     function Formbuilder(opts) {
@@ -772,8 +786,8 @@
             formBuilder: this
         });
         
-        Formbuilder.reference=((opts && opts.reference)?opts.reference:{});
-        Formbuilder.referenceType=((opts && opts.type)?opts.type:{});
+        Formbuilder.reference=((opts && opts.reference)?opts.reference:null);
+        Formbuilder.type=((opts && opts.type)?opts.type:null);
         
         this.mainView = new BuilderView(args);
     }
@@ -860,19 +874,10 @@
     (function() {
       Formbuilder.registerField(Formbuilder.fields.REFERENCE.key, {
         order: 24,
-        view: "<select>\n  <% if (rf.get(Formbuilder.options.mappings.INCLUDE_BLANK)) { %>\n    <option value=''></option>\n  <% } %>\n\n  <% for (i in (rf.get(Formbuilder.options.mappings.OPTIONS) || {})) { %>\n    <option <%= rf.get(Formbuilder.options.mappings.OPTIONS)[Formbuilder.options.mappings.REFERENCE] %>>\n      <%= rf.get(Formbuilder.options.mappings.OPTIONS)[Formbuilder.options.mappings.LABEL] %>\n    </option>\n  <% } %>\n</select>",
+        view: "  <label> <%= (rf.get(Formbuilder.options.mappings.REFERENCE_SHOW)?rf.get(Formbuilder.options.mappings.REFERENCE_SHOW):'N/A') %> </label>\n",
         edit: "<%= Formbuilder.templates['edit/reference']({ includeBlank: false }) %>",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-caret-down\"></span></span> Reference",
         defaultAttributes: function(attrs) {
-          attrs.field_options.options = [
-          {
-              label: "",
-              checked: false
-          }, {
-              label: "",
-              checked: false
-          }
-          ];
           attrs.field_options.include_blank_option = false;
           return attrs;
       }
@@ -1026,8 +1031,8 @@
         '\n' +
         ((__t = ( Formbuilder.fields[rf.get(Formbuilder.options.mappings.FIELD_TYPE)].edit({rf: rf}) )) == null ? '' : __t) +
         '\n';
-    }
-    return __p
+      }
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/base_header"] = function(obj) {
@@ -1039,8 +1044,8 @@
         '"></span>\n  <code class=\'field-type\' data-rv-text=\'model.' +
         ((__t = ( Formbuilder.options.mappings.FIELD_TYPE )) == null ? '' : __t) +
         '\'></code>\n  <span class=\'fa fa-arrow-right pull-right\'></span>\n</div>';
-    }
-    return __p
+      }
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/base_non_input"] = function(obj) {
@@ -1052,8 +1057,8 @@
         '\n' +
         ((__t = ( Formbuilder.fields[rf.get(Formbuilder.options.mappings.FIELD_TYPE)].edit({rf: rf}) )) == null ? '' : __t) +
         '\n';
-    }
-    return __p
+      }
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/checkboxes"] = function(obj) {
@@ -1065,8 +1070,8 @@
         '\' />\n  Required\n</label>\n<!-- label>\n  <input type=\'checkbox\' data-rv-checked=\'model.' +
         ((__t = ( Formbuilder.options.mappings.ADMIN_ONLY )) == null ? '' : __t) +
         '\' />\n  Admin only\n</label -->';
-    }
-    return __p
+      }
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/common"] = function(obj) {
@@ -1080,8 +1085,8 @@
         '\n  </div>\n  <div class=\'fb-clear\'></div>\n</div>\n'+
         ((__t = ( Formbuilder.templates['edit/default']() )) == null ? '' : __t) +
         '\n  </div>\n  <div class=\'fb-clear\'></div>\n</div>\n';
-    }
-    return __p
+      }
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/integer_only"] = function(obj) {
@@ -1091,8 +1096,8 @@
         __p += '<div class=\'fb-edit-section-header\'>Integer only</div>\n<label>\n  <input type=\'checkbox\' data-rv-checked=\'model.' +
         ((__t = ( Formbuilder.options.mappings.INTEGER_ONLY )) == null ? '' : __t) +
         '\' />\n  Only accept integers\n</label>\n';
-    }
-    return __p
+      }
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/label_description"] = function(obj) {
@@ -1104,8 +1109,8 @@
         '\' />\n<textarea data-rv-input=\'model.' +
         ((__t = ( Formbuilder.options.mappings.DESCRIPTION )) == null ? '' : __t) +
         '\'\n  placeholder=\'Add a longer description to this field\'></textarea>';
-    }
-    return __p
+      }
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/min_max"] = function(obj) {
@@ -1117,8 +1122,8 @@
         '" style="width: 30px" />\n\n&nbsp;&nbsp;\n\nBelow\n<input type="text" data-rv-input="model.' +
         ((__t = ( Formbuilder.options.mappings.MAX )) == null ? '' : __t) +
         '" style="width: 30px" />\n';
-    }
-    return __p
+      }
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/min_max_length"] = function(obj) {
@@ -1132,8 +1137,8 @@
         '" style="width: 30px" />\n\n&nbsp;&nbsp;\n\n<select data-rv-value="model.' +
         ((__t = ( Formbuilder.options.mappings.LENGTH_UNITS )) == null ? '' : __t) +
         '" style="width: auto;">\n  <option value="characters">characters</option>\n  <option value="words">words</option>\n</select>\n';
-    }
-    return __p
+      }
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/options"] = function(obj) {
@@ -1163,8 +1168,8 @@
         ((__t = ( Formbuilder.options.BUTTON_CLASS )) == null ? '' : __t) +
         '">Add option</a>\n</div>\n';
 
-    }
-    return __p
+      }
+      return __p
     };
 
     this["Formbuilder"]["templates"]["edit/reference"] = function(obj) {
@@ -1173,11 +1178,24 @@
       function print() { __p += __j.call(arguments, '') }
       with (obj) {
         __p += '<div class=\'fb-edit-section-header\'>Reference</div>\n\n';
-        __p += '\n\n<div class="reference">\n'+
-        '\t<select class="js-select-reference">\n\t\t<option $ref="/api/v1/schema/1">Hello</option>\n\t\t<option $ref="/api/v1/schema/2">Jello</option>\n\t</select>'+
-        '\n</div>\n';
+        __p += '\n\n<div class="reference">\n';
+
+        var option="";
+        if (Formbuilder.reference && Formbuilder.type){  
+          option+="\t<select class='js-select-reference'>\n";
+          for (i in (Formbuilder.reference[Formbuilder.type] || [])){
+            option+=("\n\t<option "+ Formbuilder.options.mappings.REFERENCE+ "='" + 
+                    Formbuilder.reference[Formbuilder.type][i][Formbuilder.options.mappings.REFERENCE] +"' "+
+              Formbuilder.options.mappings.REFERENCE_TYPE+ "='" + 
+                    Formbuilder.reference[Formbuilder.type][i][Formbuilder.options.mappings.REFERENCE_TYPE] +"'>"+ 
+              Formbuilder.reference[Formbuilder.type][i][Formbuilder.options.mappings.REFERENCE_SHOW]+"</option>\n");
+          }
+        }
+        else
+          option="<span>No References available</span>";
+        __p+=option;
+        __p+="\n</div>"
       }
-      console.log(__p);
       return __p
     };
 

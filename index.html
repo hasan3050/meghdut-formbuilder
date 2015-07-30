@@ -76,7 +76,8 @@
             "cid": "field14"
           }
         ],
-        type:"Test"
+        type:"SURVEY",
+        reference:{"RESPONDENT":[],"SURVEY":[{"submit":"sample respondent","show":"sample respondent","$ref":"/api/v1/schema/9","referenceType":"respondent"},{"submit":"Sample Form 2","show":"Sample Form 2","$ref":"/api/v1/schema/10","referenceType":"respondent"},{"submit":"Sample Form 3","show":"Sample Form 3","$ref":"/api/v1/schema/11","referenceType":"respondent"}],"PRODUCT":[{"submit":"Product","show":"Product","$ref":"/api/v1/schema/8","referenceType":"product"}],"ADDRESS":[{"submit":"Address","show":"Address","$ref":"/api/v1/schema/1","referenceType":"address"}]}
       });
 
       fb.on('save', function(payload){
