@@ -785,7 +785,7 @@
             formBuilder: this
         });
         
-        Formbuilder.reference=((opts && opts.reference)?opts.reference:null);
+        Formbuilder.reference=((opts && opts.reference)?opts.reference:{});
         Formbuilder.type=((opts && opts.type)?opts.type:null);
         
         this.mainView = new BuilderView(args);
@@ -1180,9 +1180,11 @@
         __p += '\n\n<div class="reference">\n';
 
         var option="";
+        var hasAnyOption=false;
         if (Formbuilder.reference && Formbuilder.type){  
           option+="\t<select class='js-select-reference'>\n";
           for (i in (Formbuilder.reference[Formbuilder.type] || [])){
+            hasAnyOption=true;
             option+=("\n\t<option "+ Formbuilder.options.mappings.REFERENCE+ "='" + 
                     Formbuilder.reference[Formbuilder.type][i][Formbuilder.options.mappings.REFERENCE] +"' "+
               Formbuilder.options.mappings.REFERENCE_TYPE+ "='" + 
@@ -1190,7 +1192,7 @@
               Formbuilder.reference[Formbuilder.type][i][Formbuilder.options.mappings.REFERENCE_SHOW]+"</option>\n");
           }
         }
-        else
+        if(!hasAnyOption)
           option="<span>No References available</span>";
         __p+=option;
         __p+="\n</div>"
