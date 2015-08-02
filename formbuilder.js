@@ -240,8 +240,7 @@
               this.model.set(key,options[key]);
               this.model.trigger("change:" + key);
             }
-//            this.model.set(Formbuilder.options.mappings.OPTIONS, options);
-//            this.model.trigger("change:" + Formbuilder.options.mappings.OPTIONS);
+            
             return this.forceRender();
         };
 
