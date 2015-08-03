@@ -596,28 +596,28 @@
             //set min max in json-schema. this is duplicated for schema validation
             var LIMIT_KEY= Formbuilder.options.mappings.MIN.split('.');
             LIMIT_KEY=LIMIT_KEY[LIMIT_KEY.length-1];
-            if( field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
+            if(field[Formbuilder.options.mappings.FIELD_OPTION] && field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
               item[LIMIT_KEY]= field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY];
             }
 
             LIMIT_KEY= Formbuilder.options.mappings.MAX.split('.');
             LIMIT_KEY=LIMIT_KEY[LIMIT_KEY.length-1];
             
-            if( field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
+            if(field[Formbuilder.options.mappings.FIELD_OPTION] && field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
               item[LIMIT_KEY]= field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY];
             }
 
             LIMIT_KEY= Formbuilder.options.mappings.MINLENGTH.split('.');
             LIMIT_KEY=LIMIT_KEY[LIMIT_KEY.length-1];
             
-            if( field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
+            if(field[Formbuilder.options.mappings.FIELD_OPTION] && field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
               item[LIMIT_KEY]= field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY];
             }
 
             LIMIT_KEY= Formbuilder.options.mappings.MAXLENGTH.split('.');
             LIMIT_KEY=LIMIT_KEY[LIMIT_KEY.length-1];
             
-            if( field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
+            if(field[Formbuilder.options.mappings.FIELD_OPTION] && field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
               item[LIMIT_KEY]= field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY];
             }
 
