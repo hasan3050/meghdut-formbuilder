@@ -578,8 +578,7 @@
 
             for(var element in Formbuilder.fields){
                 if(Formbuilder.fields[element].key==field[Formbuilder.options.mappings.FIELD_TYPE]){
-                    item=Formbuilder.fields[element].submit;
-                    if(field[Formbuilder.options.mappings.M])
+                    item=JSON.parse(JSON.stringify(Formbuilder.fields[element].submit));
                     break;
                 }
             };
@@ -636,6 +635,8 @@
             jsonSchema.properties.data.order.push(fieldKey);
             field[Formbuilder.options.mappings.REQUIRED] ? jsonSchema.properties.data.required.push(fieldKey):'';
             jsonSchema.properties.data.properties[fieldKey]=item;
+
+            console.log(JSON.stringify(jsonSchema.properties.data));
         })
         return jsonSchema;
     };
