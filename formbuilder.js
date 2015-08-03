@@ -308,7 +308,7 @@
         this.collection.bind('destroy', this.ensureEditViewScrolled, this);
         this.render();
         this.collection.reset(this.bootstrapData);
-        return this.bindSaveEvent();
+        //return this.bindSaveEvent();
     };
 
     BuilderView.prototype.bindSaveEvent = function() {
@@ -319,15 +319,15 @@
       if (!!Formbuilder.options.AUTOSAVE) {
         setInterval(function() {
           return _this.saveForm.call(_this);
-      }, 5000);
-    }
-    return $(window).bind('beforeunload', function() {
-        if (_this.formSaved) {
-          return void 0;
-      } else {
-          return Formbuilder.options.dict.UNSAVED_CHANGES;
+        }, 5000);
       }
-    });
+      return $(window).bind('beforeunload', function() {
+          if (_this.formSaved) {
+            return void 0;
+        } else {
+            return Formbuilder.options.dict.UNSAVED_CHANGES;
+        }
+      });
     };
 
     BuilderView.prototype.reset = function() {
@@ -524,7 +524,7 @@
         return;
       }
       this.formSaved = false;
-      return this.saveFormButton.removeAttr('disabled').text(Formbuilder.options.dict.SAVE_FORM);
+      //return this.saveFormButton.removeAttr('disabled').text(Formbuilder.options.dict.SAVE_FORM);
     };
 
     BuilderView.prototype.saveForm = function(e) {
@@ -579,6 +579,7 @@
             for(var element in Formbuilder.fields){
                 if(Formbuilder.fields[element].key==field[Formbuilder.options.mappings.FIELD_TYPE]){
                     item=Formbuilder.fields[element].submit;
+                    if(field[Formbuilder.options.mappings.M])
                     break;
                 }
             };
@@ -591,15 +592,44 @@
               item[Formbuilder.options.mappings.REFERENCE_SHOW]=field[Formbuilder.options.mappings.REFERENCE_SHOW];
               item[Formbuilder.options.mappings.REFERENCE_TYPE]=field[Formbuilder.options.mappings.REFERENCE_TYPE];
             }
+            
+            //set min max in json-schema. this is duplicated for schema validation
+            var LIMIT_KEY= Formbuilder.options.mappings.MIN.split('.');
+            LIMIT_KEY=LIMIT_KEY[LIMIT_KEY.length-1];
+            if( field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
+              item[LIMIT_KEY]= field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY];
+            }
 
+            LIMIT_KEY= Formbuilder.options.mappings.MAX.split('.');
+            LIMIT_KEY=LIMIT_KEY[LIMIT_KEY.length-1];
+            
+            if( field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
+              item[LIMIT_KEY]= field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY];
+            }
 
-            var OPTION_KEY=Formbuilder.options.mappings.FIELD_OPTION.split('.');
+            LIMIT_KEY= Formbuilder.options.mappings.MINLENGTH.split('.');
+            LIMIT_KEY=LIMIT_KEY[LIMIT_KEY.length-1];
+            
+            if( field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
+              item[LIMIT_KEY]= field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY];
+            }
+
+            LIMIT_KEY= Formbuilder.options.mappings.MAXLENGTH.split('.');
+            LIMIT_KEY=LIMIT_KEY[LIMIT_KEY.length-1];
+            
+            if( field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY]){
+              item[LIMIT_KEY]= field[Formbuilder.options.mappings.FIELD_OPTION][LIMIT_KEY];
+            }
+
+            //generates key value for checkbox/radio/dropdown labels
+            var OPTION_KEY=Formbuilder.options.mappings.OPTIONS.split('.');
             OPTION_KEY=OPTION_KEY[OPTION_KEY.length-1];
+
             if(item[Formbuilder.options.mappings.FIELD_OPTION] && item[Formbuilder.options.mappings.FIELD_OPTION][OPTION_KEY]){
-                _.each(item[Formbuilder.options.mappings.FIELD_OPTION][OPTION_KEY],function(option,index){
+                _.each(item[Formbuilder.options.mappings.FIELD_OPTION][OPTION_KEY],function(option,index,list){
                     if(!option.key){
                         key=Formbuilder.idGenerator(Formbuilder.options.mappings.OPTION_KEY);
-                        option.key=key;
+                        list[index].key=key;
                     }
                 })
             }
@@ -639,23 +669,23 @@
     })(Backbone.View);
 
     Formbuilder = (function() {
-        Formbuilder.helpers = {
-          defaultFieldAttrs: function(field_type,collection) {
-            var attrs, _base;
-            attrs = {};
-            attrs[Formbuilder.options.mappings.LABEL] = 'Untitled';
-            attrs[Formbuilder.options.mappings.FIELD_TYPE] = field_type;
-            attrs[Formbuilder.options.mappings.REQUIRED] = true;
-            attrs["cid"]=Formbuilder.idGenerator(Formbuilder.options.mappings.FIELD_KEY,collection);
-            attrs['field_options'] = {};
-            return (typeof (_base = Formbuilder.fields[field_type]).defaultAttributes === "function" ? _base.defaultAttributes(attrs) : void 0) || attrs;
+      Formbuilder.helpers = {
+        defaultFieldAttrs: function(field_type,collection) {
+          var attrs, _base;
+          attrs = {};
+          attrs[Formbuilder.options.mappings.LABEL] = 'Untitled';
+          attrs[Formbuilder.options.mappings.FIELD_TYPE] = field_type;
+          attrs[Formbuilder.options.mappings.REQUIRED] = true;
+          attrs["cid"]=Formbuilder.idGenerator(Formbuilder.options.mappings.FIELD_KEY,collection);
+          attrs['field_options'] = {};
+          return (typeof (_base = Formbuilder.fields[field_type]).defaultAttributes === "function" ? _base.defaultAttributes(attrs) : void 0) || attrs;
         },
         simple_format: function(x) {
             return x != null ? x.replace(/\n/g, '<br />') : void 0;
         }
-    };
+      };
 
-    Formbuilder.options = {
+      Formbuilder.options = {
         BUTTON_CLASS: 'fb-button',
         HTTP_ENDPOINT: '',
         HTTP_METHOD: 'POST',
@@ -680,8 +710,8 @@
             INTEGER_ONLY: 'fieldOptions.integer_only',
             MIN:          'fieldOptions.min',
             MAX:          'fieldOptions.max',
-            MINLENGTH:    'fieldOptions.minlength',
-            MAXLENGTH:    'fieldOptions.maxlength',
+            MINLENGTH:    'fieldOptions.minLength',
+            MAXLENGTH:    'fieldOptions.maxLength',
             LENGTH_UNITS: 'fieldOptions.min_max_length_units',
             FIELD_KEY:    'FIELD_KEY',
             OPTION_KEY:   'OPTION_KEY',
@@ -692,115 +722,116 @@
             SAVE_FORM: 'Save form',
             UNSAVED_CHANGES: 'You have unsaved changes. If you leave this page, you will lose those changes!'
         }
-    };
+      };
 
-    Formbuilder.fields = {
-      TEXT:{count:0,key:'text',submit:{view:'text',type:'string'}},
-      TIME:{count:0,key:'time',submit:{view:'time',type:'string'}},
-      NUMBER:{count:0,key:'number',submit:{view:'number',type:'number'}},
-      DROPDOWN:{count:0,key:'dropdown',submit:{view:'dropdown',type:'string'}},
-      CHECKBOX:{count:0,key:'checkboxes',submit:{view:'checkboxes',type:'array'}},
-      RADIO:{count:0,key:'radio',submit:{view:'radio',type:'string'}},
-      DATE:{count:0,key:'date',submit:{view:'date',type:'string', format:'date-time'}},
-      REFERENCE:{count:0,key:'reference',submit:{view:'reference',type:'object'}},
-      ADDRESS:{count:0,key:'address',submit:{view:'address',type:'object'}},
-      EMAIL:{count:0,key:'email',submit:{view:'email',type:'string',format:'email'}},
-      PARAGRAPH:{count:0,key:'paragraph',submit:{view:'paragraph',type:'string'}},
-      URL:{count:0,key:'url',submit:{view:'url',type:'string',format:'url'}},
-      FIELD_KEY:{count:0,key:'field'},
-      OPTION_KEY:{count:0,key:'key'}
-    };
+      Formbuilder.fields = {
+        TEXT:{count:0,key:'text',submit:{view:'text',type:'string'}},
+        TIME:{count:0,key:'time',submit:{view:'time',type:'string'}},
+        NUMBER:{count:0,key:'number',submit:{view:'number',type:'number'}},
+        DROPDOWN:{count:0,key:'dropdown',submit:{view:'dropdown',type:'string'}},
+        CHECKBOX:{count:0,key:'checkboxes',submit:{view:'checkboxes',type:'array'}},
+        RADIO:{count:0,key:'radio',submit:{view:'radio',type:'string'}},
+        DATE:{count:0,key:'date',submit:{view:'date',type:'string', format:'date-time'}},
+        REFERENCE:{count:0,key:'reference',submit:{view:'reference',type:'object'}},
+        ADDRESS:{count:0,key:'address',submit:{view:'address',type:'object'}},
+        EMAIL:{count:0,key:'email',submit:{view:'email',type:'string',format:'email'}},
+        PARAGRAPH:{count:0,key:'paragraph',submit:{view:'paragraph',type:'string'}},
+        URL:{count:0,key:'url',submit:{view:'url',type:'string',format:'url'}},
+        FIELD_KEY:{count:0,key:'field'},
+        OPTION_KEY:{count:0,key:'key'}
+      };
 
-    Formbuilder.inputFields = {};
+      Formbuilder.inputFields = {};
 
-    Formbuilder.nonInputFields = {};
+      Formbuilder.nonInputFields = {};
 
-    Formbuilder.idGenerator=function(elementType,collection){
-        var count=parseInt(Formbuilder.fields[elementType].count)+1;
-        
-        if(elementType==Formbuilder.options.mappings.FIELD_KEY && collection){
-            var max=0;
-            _.each(collection.models,function(element,index){
-                var cid= element.cid.split(/.*[^0-9]/);
-                cid?cid=parseInt(cid[cid.length-1]):null;
-                if(cid && cid>max)
-                    max=cid;
-            })
+      Formbuilder.idGenerator=function(elementType,collection){
+          var count=parseInt(Formbuilder.fields[elementType].count)+1;
+          
+          if(elementType==Formbuilder.options.mappings.FIELD_KEY && collection){
+              var max=0;
+              _.each(collection.models,function(element,index){
+                  var cid= element.cid.split(/.*[^0-9]/);
+                  cid?cid=parseInt(cid[cid.length-1]):null;
+                  if(cid && cid>max)
+                      max=cid;
+              })
 
-            count=parseInt(Formbuilder.options.mappings.CID_GAP)+parseInt(max);
+              count=parseInt(Formbuilder.options.mappings.CID_GAP)+parseInt(max);
+          }
+          Formbuilder.fields[elementType].count=count;
+          return Formbuilder.fields[elementType].key+count;
+      };
+
+      Formbuilder.registerField = function(name, opts) {
+        var x, _i, _len, _ref5;
+        _ref5 = ['view', 'edit'];
+        for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
+          x = _ref5[_i];
+          opts[x] = _.template(opts[x]);
         }
-        Formbuilder.fields[elementType].count=count;
-        return Formbuilder.fields[elementType].key+count;
-    };
+        opts.field_type = name;
+        Formbuilder.fields[name] = opts;
+        if (opts.type === 'non_input') {
+          return Formbuilder.nonInputFields[name] = opts;
+        } else {
+          return Formbuilder.inputFields[name] = opts;
+        }
+      };
 
-    Formbuilder.registerField = function(name, opts) {
-      var x, _i, _len, _ref5;
-      _ref5 = ['view', 'edit'];
-      for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
-        x = _ref5[_i];
-        opts[x] = _.template(opts[x]);
+      function Formbuilder(opts) {
+          var args;
+          if (opts == null) {
+              opts = {};
+          }
+          if(opts.isJsonSchema && opts.schema){
+              var schema=opts.schema;
+              var bootstrapData=[];
+              if(schema && schema.properties && schema.properties.data){
+                  
+                  var data=schema.properties.data.properties;
+                  var order=schema.properties.data.order;
+                  var required=schema.properties.data.required;
+
+                  for(var i=0;order[i];i+=1){
+                      if(data[order[i]] && !data[order[i]].hidden){
+                          var schemaElement=data[order[i]];
+                          var formElement={
+                              title: schemaElement.title,
+                              view: schemaElement.view,
+                              required: _.contains(required,order[i]),
+                              fieldOptions:(schemaElement.fieldOptions || {}),
+                              cid:order[i]
+                          }
+
+                          bootstrapData.push(formElement);
+                      }
+                  }
+              }
+              opts.bootstrapData=bootstrapData;
+          }
+          _.extend(this, Backbone.Events);
+          args = _.extend(opts, {
+              formBuilder: this
+          });
+          
+          Formbuilder.reference=((opts && opts.reference)?opts.reference:{});
+          Formbuilder.type=((opts && opts.type)?opts.type:null);
+          
+          this.mainView = new BuilderView(args);
       }
-      opts.field_type = name;
-      Formbuilder.fields[name] = opts;
-      if (opts.type === 'non_input') {
-        return Formbuilder.nonInputFields[name] = opts;
-      } else {
-        return Formbuilder.inputFields[name] = opts;
-      }
-    };
 
-    function Formbuilder(opts) {
-        var args;
-        if (opts == null) {
-            opts = {};
-        }
-        if(opts.isJsonSchema && opts.schema){
-            var schema=opts.schema;
-            var bootstrapData=[];
-            if(schema && schema.properties && schema.properties.data){
-                
-                var data=schema.properties.data.properties;
-                var order=schema.properties.data.order;
-                var required=schema.properties.data.required;
-
-                for(var i=0;order[i];i+=1){
-                    if(data[order[i]] && !data[order[i]].hidden){
-                        var schemaElement=data[order[i]];
-                        var formElement={
-                            title: schemaElement.title,
-                            view: schemaElement.view,
-                            required: _.contains(required,order[i]),
-                            fieldOptions:(schemaElement.fieldOptions || {}),
-                            cid:order[i]
-                        }
-
-                        bootstrapData.push(formElement);
-                    }
-                }
-            }
-            opts.bootstrapData=bootstrapData;
-        }
-        _.extend(this, Backbone.Events);
-        args = _.extend(opts, {
-            formBuilder: this
-        });
-        
-        Formbuilder.reference=((opts && opts.reference)?opts.reference:{});
-        Formbuilder.type=((opts && opts.type)?opts.type:null);
-        
-        this.mainView = new BuilderView(args);
-    }
-
-    return Formbuilder;
+      return Formbuilder;
 
     })();
 
     window.Formbuilder = Formbuilder;
 
     if (typeof module !== "undefined" && module !== null) {
-        module.exports = Formbuilder;
-    } else {
-        window.Formbuilder = Formbuilder;
+      module.exports = Formbuilder;
+    } 
+    else {
+      window.Formbuilder = Formbuilder;
     }
 
     }).call(this);
@@ -811,7 +842,7 @@
         view: "<div class='input-line'>\n  <span class='street'>\n    <input type='text' />\n    <label>Address</label>\n  </span>\n</div>\n\n<div class='input-line'>\n  <span class='city'>\n    <input type='text' />\n    <label>City</label>\n  </span>\n\n  <span class='state'>\n    <input type='text' />\n    <label>State / Province / Region</label>\n  </span>\n</div>\n\n<div class='input-line'>\n  <span class='zip'>\n    <input type='text' />\n    <label>Zipcode</label>\n  </span>\n\n  <span class='country'>\n    <select><option>Bangladesh</option></select>\n    <label>Country</label>\n  </span>\n</div>",
         edit: "<%= Formbuilder.templates['edit/options']({ includeOther: true }) %>",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-home\"></span></span> Address"
-    });
+      });
 
     }).call(this);
 
@@ -832,8 +863,8 @@
           }
           ];
           return attrs;
-      }
-    });
+        }
+      });
 
     }).call(this);
 
@@ -841,9 +872,9 @@
       Formbuilder.registerField(Formbuilder.fields.DATE.key, {
         order: 20,
         view: "<div class='input-line'>\n  <span class='month'>\n    <input type=\"text\" />\n    <label>MM</label>\n  </span>\n\n  <span class='above-line'>/</span>\n\n  <span class='day'>\n    <input type=\"text\" />\n    <label>DD</label>\n  </span>\n\n  <span class='above-line'>/</span>\n\n  <span class='year'>\n    <input type=\"text\" />\n    <label>YYYY</label>\n  </span>\n</div>",
-        edit: "",
+        edit: "<%= Formbuilder.templates['edit/default']() %>\n",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-calendar\"></span></span> Date"
-    });
+      });
 
     }).call(this);
 
@@ -865,22 +896,8 @@
           ];
           attrs.field_options.include_blank_option = false;
           return attrs;
-      }
-    });
-
-    }).call(this);
-
-    (function() {
-      Formbuilder.registerField(Formbuilder.fields.REFERENCE.key, {
-        order: 24,
-        view: "  <label> <%= (rf.get(Formbuilder.options.mappings.REFERENCE_SHOW)?rf.get(Formbuilder.options.mappings.REFERENCE_SHOW):'N/A') %> </label>\n",
-        edit: "<%= Formbuilder.templates['edit/reference']({ includeBlank: false }) %>",
-        addButton: "<span class=\"symbol\"><span class=\"fa fa-caret-down\"></span></span> Reference",
-        defaultAttributes: function(attrs) {
-          attrs.field_options.include_blank_option = false;
-          return attrs;
-      }
-    });
+        }
+      });
 
     }).call(this);
 
@@ -888,9 +905,9 @@
       Formbuilder.registerField(Formbuilder.fields.EMAIL.key, {
         order: 40,
         view: "<input type='text' class='rf-size-<%= rf.get(Formbuilder.options.mappings.SIZE) %>' />",
-        edit: "",
+        edit: "<%= Formbuilder.templates['edit/default']() %>\n",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-envelope-o\"></span></span> Email"
-    });
+      });
 
     }).call(this);
 
@@ -898,9 +915,9 @@
       Formbuilder.registerField(Formbuilder.fields.NUMBER.key, {
         order: 30,
         view: "<input type='text' />\n<% if (units = rf.get(Formbuilder.options.mappings.UNITS)) { %>\n  <%= units %>\n<% } %>",
-        edit: "<%= Formbuilder.templates['edit/min_max']() %>\n<%= Formbuilder.templates['edit/integer_only']() %>",
+        edit: "<%= Formbuilder.templates['edit/default']() %>\n<%= Formbuilder.templates['edit/min_max']() %>\n<%= Formbuilder.templates['edit/integer_only']() %>",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-number\">123</span></span> Number"
-    });
+      });
 
     }).call(this);
 
@@ -908,13 +925,13 @@
       Formbuilder.registerField(Formbuilder.fields.PARAGRAPH.key, {
         order: 5,
         view: "<textarea class='rf-size-<%= rf.get(Formbuilder.options.mappings.SIZE) %>'></textarea>",
-        edit: "<%= Formbuilder.templates['edit/size']() %>\n<%= Formbuilder.templates['edit/min_max_length']() %>",
+        edit: "<%= Formbuilder.templates['edit/default']() %>\n<%= Formbuilder.templates['edit/size']() %>\n<%= Formbuilder.templates['edit/min_max_length']() %>",
         addButton: "<span class=\"symbol\">&#182;</span> Paragraph",
         defaultAttributes: function(attrs) {
           attrs.field_options.size = 'small';
           return attrs;
-      }
-    });
+        }
+      });
 
     }).call(this);
 
@@ -924,7 +941,7 @@
         view: "<div class='input-line'>\n  <span class='above-line'>$</span>\n  <span class='dolars'>\n    <input type='text' />\n    <label>Dollars</label>\n  </span>\n  <span class='above-line'>.</span>\n  <span class='cents'>\n    <input type='text' />\n    <label>Cents</label>\n  </span>\n</div>",
         edit: "",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-usd\"></span></span> Price"
-    });
+      });
 
     }).call(this);*/
 
@@ -945,10 +962,25 @@
           }
           ];
           return attrs;
-      }
-    });
+        }
+      });
 
     }).call(this);
+
+    (function() {
+      Formbuilder.registerField(Formbuilder.fields.REFERENCE.key, {
+        order: 24,
+        view: "  <label> <%= (rf.get(Formbuilder.options.mappings.REFERENCE_SHOW)?rf.get(Formbuilder.options.mappings.REFERENCE_SHOW):'N/A') %> </label>\n",
+        edit: "<%= Formbuilder.templates['edit/reference']({ includeBlank: false }) %>",
+        addButton: "<span class=\"symbol\"><span class=\"fa fa-caret-down\"></span></span> Reference",
+        defaultAttributes: function(attrs) {
+          attrs.field_options.include_blank_option = false;
+          return attrs;
+        }
+      });
+
+    }).call(this);
+
 
     /*(function() {
       Formbuilder.registerField('section_break', {
@@ -965,13 +997,13 @@
       Formbuilder.registerField(Formbuilder.fields.TEXT.key, {
         order: 0,
         view: "<input type='text' class='rf-size-<%= rf.get(Formbuilder.options.mappings.SIZE) %>' />",
-        edit: "<%= Formbuilder.templates['edit/size']() %>\n<%= Formbuilder.templates['edit/min_max_length']() %>",
+        edit: "<%= Formbuilder.templates['edit/default']() %>\n<%= Formbuilder.templates['edit/size']() %>\n<%= Formbuilder.templates['edit/min_max_length']() %>",
         addButton: "<span class='symbol'><span class='fa fa-font'></span></span> Text",
         defaultAttributes: function(attrs) {
           attrs.field_options.size = 'small';
           return attrs;
-      }
-    });
+        }
+      });
 
     }).call(this);
 
@@ -1000,9 +1032,9 @@
         "</select>"+
         "</span>"+
         "</div>",
-        edit: "",
+        edit: "<%= Formbuilder.templates['edit/default']() %>",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-clock-o\"></span></span> Time"
-    });
+      });
 
     }).call(this);
 
@@ -1010,9 +1042,9 @@
       Formbuilder.registerField(Formbuilder.fields.URL.key, {
         order: 35,
         view: "<input type='text' placeholder='http://' />",
-        edit: "",
+        edit: "<%= Formbuilder.templates['edit/default']() %>",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-link\"></span></span> Link"
-    });
+      });
 
     }).call(this);
 
@@ -1081,8 +1113,6 @@
         ((__t = ( Formbuilder.templates['edit/label_description']() )) == null ? '' : __t) +
         '\n  </div>\n  <div class=\'fb-common-checkboxes\'>\n    ' +
         ((__t = ( Formbuilder.templates['edit/checkboxes']() )) == null ? '' : __t) +
-        '\n  </div>\n  <div class=\'fb-clear\'></div>\n</div>\n'+
-        ((__t = ( Formbuilder.templates['edit/default']() )) == null ? '' : __t) +
         '\n  </div>\n  <div class=\'fb-clear\'></div>\n</div>\n';
       }
       return __p
