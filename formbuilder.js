@@ -635,8 +635,6 @@
             jsonSchema.properties.data.order.push(fieldKey);
             field[Formbuilder.options.mappings.REQUIRED] ? jsonSchema.properties.data.required.push(fieldKey):'';
             jsonSchema.properties.data.properties[fieldKey]=item;
-
-            console.log(JSON.stringify(jsonSchema.properties.data));
         })
         return jsonSchema;
     };
