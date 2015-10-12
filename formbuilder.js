@@ -550,7 +550,6 @@
         payload = this.collection.toJSON();
 
         jsonSchema={
-            "$schema":"http://json-schema.org/draft-04/schema#",
             type:'object',
             formType:this.type,
             properties:{
