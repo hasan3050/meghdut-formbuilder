@@ -560,15 +560,15 @@
                     order:[],
                     required:[]
                 },
-                schema:{
+                schemaId:{
                     title:'Type',
                     view:'text',
-                    type:'integer',
+                    type:'string',
                     hidden:true
                 }
             },
             order:['data'],
-            required:['data','schema']
+            required:['data','schemaId']
         };
         var _this=this;
         _.each(payload,function(field,index){
