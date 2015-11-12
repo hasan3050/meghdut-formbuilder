@@ -735,6 +735,7 @@
         EMAIL:{count:0,key:'email',submit:{view:'email',type:'string',format:'email'}},
         PARAGRAPH:{count:0,key:'paragraph',submit:{view:'paragraph',type:'string'}},
         URL:{count:0,key:'url',submit:{view:'url',type:'string',format:'url'}},
+        FILE:{count:0,key:'file',submit:{view:'file',type:'string',format:'url'}},
         FIELD_KEY:{count:0,key:'field'},
         OPTION_KEY:{count:0,key:'key'}
       };
@@ -834,7 +835,7 @@
 
     }).call(this);
 
-    (function() {
+    /*(function() {
       Formbuilder.registerField(Formbuilder.fields.ADDRESS.key, {
         order: 50,
         view: "<div class='input-line'>\n  <span class='street'>\n    <input type='text' />\n    <label>Address</label>\n  </span>\n</div>\n\n<div class='input-line'>\n  <span class='city'>\n    <input type='text' />\n    <label>City</label>\n  </span>\n\n  <span class='state'>\n    <input type='text' />\n    <label>State / Province / Region</label>\n  </span>\n</div>\n\n<div class='input-line'>\n  <span class='zip'>\n    <input type='text' />\n    <label>Zipcode</label>\n  </span>\n\n  <span class='country'>\n    <select><option>Bangladesh</option></select>\n    <label>Country</label>\n  </span>\n</div>",
@@ -842,7 +843,7 @@
         addButton: "<span class=\"symbol\"><span class=\"fa fa-home\"></span></span> Address"
       });
 
-    }).call(this);
+    }).call(this);*/
 
     (function() {
       Formbuilder.registerField(Formbuilder.fields.CHECKBOX.key, {
@@ -970,7 +971,7 @@
         order: 24,
         view: "  <label> <%= (rf.get(Formbuilder.options.mappings.REFERENCE_SHOW)?rf.get(Formbuilder.options.mappings.REFERENCE_SHOW):'N/A') %> </label>\n",
         edit: "<%= Formbuilder.templates['edit/reference']({ includeBlank: false }) %>",
-        addButton: "<span class=\"symbol\"><span class=\"fa fa-caret-down\"></span></span> Reference",
+        addButton: "<span class=\"symbol\"><span class=\"fa fa-external-link\"></span></span> Reference",
         defaultAttributes: function(attrs) {
           attrs.field_options.include_blank_option = false;
           return attrs;
@@ -1042,6 +1043,16 @@
         view: "<input type='text' placeholder='http://' />",
         edit: "<%= Formbuilder.templates['edit/default']() %>",
         addButton: "<span class=\"symbol\"><span class=\"fa fa-link\"></span></span> Link"
+      });
+
+    }).call(this);
+
+    (function() {
+      Formbuilder.registerField(Formbuilder.fields.FILE.key, {
+        order: 35,
+        view: "<input type='file' placeholder='Select a file' />",
+        edit: "<%= Formbuilder.templates['edit/default']() %>",
+        addButton: "<span class=\"symbol\"><span class=\"fa fa-file\"></span></span> File"
       });
 
     }).call(this);
